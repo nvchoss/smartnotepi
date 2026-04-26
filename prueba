@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Proyecto IWG400</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Bienvenido a mi página</h1>
+    <p>Este es mi primer sitio web para la universidad.</p>
+    <button type="button" onclick="saludar()">¡Haz clic aquí!</button>
+    <p id="mensaje"></p>
+
+    <script>
+        function saludar() {
+            document.getElementById("mensaje").innerHTML = "¡Gracias por visitar mi página!";
+        }
+    </script>
+</body>
+</html>
