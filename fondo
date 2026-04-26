@@ -1,0 +1,8 @@
+body {
+    background-color: powderblue;
+    font-family: verdana;
+    text-align: center;
+}
+h1 {
+    color: blue;
+}
