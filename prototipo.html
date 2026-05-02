@@ -46,13 +46,39 @@
             border-bottom: 1px solid #e0e0e0;
         }
 
-        .record-dot {
-            width: 22px;
-            height: 22px;
+        .record-btn {
+            width: 34px;
+            height: 34px;
             background: #e83030;
             border-radius: 50%;
             flex-shrink: 0;
             border: 2px solid #c52020;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .record-btn:hover {
+            background: #cc2020;
+            transform: scale(1.05);
+        }
+
+        .record-btn.recording {
+            background: #e87a10;
+            border-color: #c55e00;
+            animation: pulse 1.2s infinite;
+        }
+
+        .record-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(232, 122, 16, 0.5); }
+            50%       { box-shadow: 0 0 0 6px rgba(232, 122, 16, 0); }
         }
 
         .recording-text {
@@ -61,9 +87,52 @@
             color: #333;
         }
 
-        .flag {
-            font-size: 22px;
+        .recording-text.active {
+            color: #e87a10;
+            font-style: italic;
+        }
+
+        .lang-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 46px;
+            height: 38px;
+            border-radius: 7px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            flex-shrink: 0;
+            gap: 1px;
+            transition: transform 0.1s, box-shadow 0.15s;
+        }
+
+        .lang-btn:hover {
+            transform: scale(1.06);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+
+        .lang-btn.lang-us {
+            background: #1a5fb4;
+            border-color: #1046a0;
+            color: white;
+        }
+
+        .lang-btn.lang-esp {
+            background: #f5c200;
+            border-color: #c99a00;
+            color: #3a2800;
+        }
+
+        .lang-flag {
+            font-size: 15px;
             line-height: 1;
+        }
+
+        .lang-code {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
         }
 
         .note-textarea {
@@ -80,9 +149,13 @@
             font-family: Arial, sans-serif;
         }
 
+        .note-textarea[readonly] {
+            background: #f7f7f7;
+            cursor: default;
+        }
+
         .note-textarea:focus {
             outline: none;
-            border-color: #999;
         }
 
         .save-bar {
@@ -243,12 +316,28 @@
         <!-- ===== PANEL IZQUIERDO: Editor de nota ===== -->
         <div class="left-panel">
             <div class="recording-bar">
-                <div class="record-dot"></div>
-                <span class="recording-text">But I must explain to you ...</span>
-                <span class="flag">🇺🇸</span>
+                <button id="recordBtn" class="record-btn" title="Iniciar grabación">
+                    <!-- Ícono micrófono (estado inicial) -->
+                    <svg id="iconMic" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="2" width="6" height="11" rx="3" fill="white" stroke="white"/>
+                        <path d="M5 10a7 7 0 0014 0"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                        <line x1="8"  y1="21" x2="16" y2="21"/>
+                    </svg>
+                    <!-- Ícono pausa (estado grabando, oculto por defecto) -->
+                    <svg id="iconPause" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" style="display:none;">
+                        <rect x="6"  y="4" width="4" height="16" rx="1"/>
+                        <rect x="14" y="4" width="4" height="16" rx="1"/>
+                    </svg>
+                </button>
+                <span id="recordingText" class="recording-text">Presioná el micrófono para grabar</span>
+                <button id="langBtn" class="lang-btn lang-esp" title="Cambiar idioma">
+                    <span class="lang-flag">🇪🇸</span>
+                    <span class="lang-code">ESP</span>
+                </button>
             </div>
 
-            <textarea class="note-textarea">of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who</textarea>
+            <textarea class="note-textarea" readonly>of denouncing pleasure and praising pain was born and I will give you a complete account of the system, and expound the actual teachings of the great explorer of the truth, the master-builder of human happiness. No one rejects, dislikes, or avoids pleasure itself, because it is pleasure, but because those who do not know how to pursue pleasure rationally encounter consequences that are extremely painful. Nor again is there anyone who</textarea>
 
             <div class="save-bar">
                 <label>Título de la nota</label>
@@ -355,5 +444,98 @@
         </div>
 
     </div>
+
+    <script>
+        const recordBtn     = document.getElementById('recordBtn');
+        const iconMic       = document.getElementById('iconMic');
+        const iconPause     = document.getElementById('iconPause');
+        const recordingText = document.getElementById('recordingText');
+        const noteTextarea  = document.querySelector('.note-textarea');
+
+        let isRecording = false;
+        let finalTranscript = '';
+        let currentLang = 'es-AR';
+
+        // --- Toggle de idioma ---
+        const langBtn = document.getElementById('langBtn');
+        langBtn.addEventListener('click', () => {
+            if (currentLang === 'es-AR') {
+                currentLang = 'en-US';
+                langBtn.className = 'lang-btn lang-us';
+                langBtn.querySelector('.lang-flag').textContent = '🇺🇸';
+                langBtn.querySelector('.lang-code').textContent = 'US';
+            } else {
+                currentLang = 'es-AR';
+                langBtn.className = 'lang-btn lang-esp';
+                langBtn.querySelector('.lang-flag').textContent = '🇪🇸';
+                langBtn.querySelector('.lang-code').textContent = 'ESP';
+            }
+            if (recognition) recognition.lang = currentLang;
+        });
+
+        // --- Toggle visual (siempre funciona, independiente de la API) ---
+        function showPauseIcon() {
+            iconMic.style.display   = 'none';
+            iconPause.style.display = 'block';
+            recordBtn.classList.add('recording');
+            recordBtn.title = 'Detener grabación';
+            recordingText.textContent = 'Grabando...';
+            recordingText.classList.add('active');
+        }
+
+        function showMicIcon() {
+            iconMic.style.display   = 'block';
+            iconPause.style.display = 'none';
+            recordBtn.classList.remove('recording');
+            recordBtn.title = 'Iniciar grabación';
+            recordingText.textContent = 'Presioná el micrófono para grabar';
+            recordingText.classList.remove('active');
+        }
+
+        // --- Reconocimiento de voz (opcional) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = currentLang;
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = (event) => {
+                let interim = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    } else {
+                        interim += event.results[i][0].transcript;
+                    }
+                }
+                noteTextarea.value = finalTranscript + interim;
+            };
+
+            recognition.onend = () => {
+                if (isRecording) try { recognition.start(); } catch (_) {}
+            };
+        }
+
+        // --- Click: primero toggle visual, después intenta la API ---
+        recordBtn.addEventListener('click', () => {
+            isRecording = !isRecording;
+
+            if (isRecording) {
+                showPauseIcon();
+                if (recognition) {
+                    finalTranscript = noteTextarea.value ? noteTextarea.value.trimEnd() + ' ' : '';
+                    try { recognition.start(); } catch (_) {}
+                }
+            } else {
+                showMicIcon();
+                if (recognition) {
+                    try { recognition.stop(); } catch (_) {}
+                }
+            }
+        });
+    </script>
 </body>
 </html>
