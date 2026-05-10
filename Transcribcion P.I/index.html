@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">    
+     <link rel="stylesheet" href="style.css">
+    <title>Dictado Web</title>
+</head>
+<body>
+    <div class="app-container">
+        <div class="fila-superior">
+            <div class="controles">
+                <h1>Transcripción a texto :D</h1>
+                <button id="btn-action">Iniciar Micrófono</button>
+                <button onclick="guardarNota()" id="btn-save">Guardar Nota</button>
+                <button id="btn-clear">Limpiar</button>
+            </div>
+            
+            <div id="texto-transcrito" class="caja-texto" placeholder="Tu texto aparecerá aquí..."></div>
+        </div>
+        <section class="seccion-notas">
+            <h3>Notas Guardadas</h3>
+            <ul id="lista-notas"></ul>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+
+</html>
+
+
