@@ -44,11 +44,13 @@ Si no tienes Git, puedes descargar el proyecto como ZIP desde GitHub (botón ver
 
 ### 3. Crear el entorno virtual e instalar dependencias
 
-Dentro de la carpeta del proyecto, ejecuta estos comandos uno por uno:
+El entorno virtual no está incluido en el repositorio, así que hay que crearlo la primera vez. Dentro de la carpeta del proyecto, ejecuta:
 
 ```
 python3 -m venv venv
 ```
+
+Luego actívalo:
 
 **En Windows:**
 ```
@@ -60,10 +62,10 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-Luego instala Flask:
+E instala Flask:
 
 ```
-pip install flask
+pip3 install flask
 ```
 
 > Notarás que la terminal ahora dice `(venv)` al principio. Eso significa que el entorno virtual está activo. Debes activarlo cada vez que quieras usar la aplicación.
@@ -128,9 +130,10 @@ smartnotepi/
 ├── notas.db        → Base de datos (se crea automáticamente)
 ├── static/
 │   └── index.html  → Interfaz de la aplicación
-├── legacy/         → Versiones anteriores del proyecto
-└── venv/           → Entorno virtual de Python (no tocar)
+└── legacy/         → Versiones anteriores del proyecto
 ```
+
+> `venv/` y `notas.db` no están en el repositorio. Se generan localmente al seguir los pasos de instalación.
 
 ---
 
