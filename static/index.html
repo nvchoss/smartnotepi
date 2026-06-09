@@ -77,26 +77,6 @@
         .recording-text { flex: 1; font-size: 14px; color: #333; }
         .recording-text.active { color: #e87a10; font-style: italic; }
 
-        .lang-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 46px;
-            height: 38px;
-            border-radius: 7px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            flex-shrink: 0;
-            gap: 1px;
-            transition: transform 0.1s, box-shadow 0.15s;
-        }
-
-        .lang-btn:hover { transform: scale(1.06); box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
-        .lang-btn.lang-us  { background: #1a5fb4; border-color: #1046a0; color: white; }
-        .lang-btn.lang-esp { background: #f5c200; border-color: #c99a00; color: #3a2800; }
-        .lang-flag { font-size: 15px; line-height: 1; }
-        .lang-code { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; }
 
         .note-textarea {
             flex: 1;
@@ -112,7 +92,8 @@
             overflow-y: auto;
         }
 
-        .note-textarea[readonly] { background: #f7f7f7; cursor: default; }
+        .btn-corregir { background: #7b5ea7; color: white; }
+        .btn-corregir:disabled { opacity: 0.55; cursor: not-allowed; }
         .note-textarea:focus { outline: none; }
 
         .save-bar {
@@ -448,19 +429,17 @@
                     </svg>
                 </button>
                 <span id="recordingText" class="recording-text">Presioná el micrófono para grabar</span>
-                <button id="langBtn" class="lang-btn lang-esp" title="Cambiar idioma">
-                    <span class="lang-flag">🇪🇸</span>
-                    <span class="lang-code">ESP</span>
-                </button>
+                <button id="langBtn" title="Cambiar idioma" style="padding:4px 10px;border:1px solid #ccc;border-radius:5px;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#555;flex-shrink:0">ESP</button>
             </div>
 
-            <textarea id="noteTextarea" class="note-textarea" placeholder="El texto transcripto aparecerá aquí..." readonly></textarea>
+            <textarea id="noteTextarea" class="note-textarea" placeholder="El texto transcripto aparecerá aquí..."></textarea>
 
             <div class="save-bar">
                 <label>Título de la nota</label>
                 <div class="save-bar-controls">
                     <input type="text" id="titleInput" class="title-input" placeholder="Sin título">
                     <button class="btn btn-guardar" id="btnGuardar">Guardar</button>
+                    <button class="btn btn-corregir" id="btnCorregir">Corregir IA</button>
                     <button class="btn btn-limpiar" id="btnLimpiar">Limpiar</button>
                 </div>
                 <div class="save-error" id="saveError"></div>
@@ -516,6 +495,24 @@
         </div>
     </div>
 
+    <!-- ===== MODAL EDITAR NOTA ===== -->
+    <div class="modal-overlay" id="editOverlay">
+        <div class="modal-box" style="width:600px;max-height:85vh">
+            <div class="modal-header">
+                <span class="modal-title" id="editModalTitle">Editar nota</span>
+                <button class="modal-close" id="editClose">✕</button>
+            </div>
+            <div style="padding:14px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden">
+                <textarea id="editTextarea" style="flex:1;resize:none;border:1px solid #ccc;border-radius:6px;padding:10px;font-size:13.5px;line-height:1.65;font-family:Arial,sans-serif;min-height:300px;color:#444;outline:none"></textarea>
+                <div id="editError" style="color:#cc4444;font-size:12px;min-height:16px"></div>
+                <div style="display:flex;gap:8px;justify-content:flex-end">
+                    <button id="editCancelBtn" style="padding:7px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:13px">Cancelar</button>
+                    <button id="editSaveBtn" style="padding:7px 16px;border:none;border-radius:6px;background:#4a75c0;color:#fff;cursor:pointer;font-size:13px;font-weight:500">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== MODAL VER NOTA ===== -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-box">
@@ -540,22 +537,17 @@
         let finalTranscript = '';
         let currentLang = 'es-AR';
 
-        document.getElementById('langBtn').addEventListener('click', () => {
+        const langBtn = document.getElementById('langBtn');
+        langBtn.addEventListener('click', () => {
             if (currentLang === 'es-AR') {
                 currentLang = 'en-US';
-                langBtn.className = 'lang-btn lang-us';
-                langBtn.querySelector('.lang-flag').textContent = '🇺🇸';
-                langBtn.querySelector('.lang-code').textContent = 'US';
+                langBtn.textContent = 'EN';
             } else {
                 currentLang = 'es-AR';
-                langBtn.className = 'lang-btn lang-esp';
-                langBtn.querySelector('.lang-flag').textContent = '🇪🇸';
-                langBtn.querySelector('.lang-code').textContent = 'ESP';
+                langBtn.textContent = 'ESP';
             }
             if (recognition) recognition.lang = currentLang;
         });
-
-        const langBtn = document.getElementById('langBtn');
 
         function showPauseIcon() {
             iconMic.style.display   = 'none';
@@ -564,6 +556,7 @@
             recordBtn.title = 'Detener grabación';
             recordingText.textContent = 'Grabando...';
             recordingText.classList.add('active');
+            document.getElementById('btnCorregir').disabled = true;
         }
 
         function showMicIcon() {
@@ -573,6 +566,7 @@
             recordBtn.title = 'Iniciar grabación';
             recordingText.textContent = 'Presioná el micrófono para grabar';
             recordingText.classList.remove('active');
+            document.getElementById('btnCorregir').disabled = false;
         }
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -658,6 +652,7 @@
                         <button class="menu-btn" title="Más opciones">⋮</button>
                         <div class="dropdown-menu" style="display:none">
                             <button class="dropdown-item item-view">Ver</button>
+                            <button class="dropdown-item item-edit">Editar</button>
                             <button class="dropdown-item item-download">Descargar</button>
                             <button class="dropdown-item item-rename">Renombrar</button>
                             <button class="dropdown-item item-chat">Chat con IA</button>
@@ -679,6 +674,7 @@
 
             const close = () => dropdown.style.display = 'none';
             li.querySelector('.item-view').addEventListener('click',     () => { close(); verNota(nota.id); });
+            li.querySelector('.item-edit').addEventListener('click',     () => { close(); editarNota(nota.id, nota.titulo, li); });
             li.querySelector('.item-download').addEventListener('click', () => { close(); descargarNota(nota.id, nota.titulo); });
             li.querySelector('.item-rename').addEventListener('click',   () => { close(); renombrarNota(nota.id, nota.titulo, li); });
             li.querySelector('.item-chat').addEventListener('click',     () => { close(); abrirChat(nota.id, nota.titulo); });
@@ -795,6 +791,53 @@
             actualizarListaVacia();
         }
 
+        // Editar nota
+        let editTarget = null;
+
+        async function editarNota(notaId, titulo, li) {
+            const res  = await fetch(`/api/notas/${notaId}`);
+            const nota = await res.json();
+            editTarget = { notaId, li };
+            document.getElementById('editModalTitle').textContent = `Editar — ${titulo}`;
+            document.getElementById('editTextarea').value = nota.contenido;
+            document.getElementById('editError').textContent = '';
+            document.getElementById('editOverlay').classList.add('open');
+            setTimeout(() => document.getElementById('editTextarea').focus(), 50);
+        }
+
+        const cerrarEdit = () => document.getElementById('editOverlay').classList.remove('open');
+        document.getElementById('editClose').addEventListener('click', cerrarEdit);
+        document.getElementById('editCancelBtn').addEventListener('click', cerrarEdit);
+        document.getElementById('editOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('editOverlay')) cerrarEdit();
+        });
+
+        document.getElementById('editSaveBtn').addEventListener('click', async () => {
+            const contenido = document.getElementById('editTextarea').value.trim();
+            const errorEl   = document.getElementById('editError');
+            const saveBtn   = document.getElementById('editSaveBtn');
+            if (!contenido) { errorEl.textContent = 'El contenido no puede estar vacío.'; return; }
+
+            saveBtn.textContent = 'Guardando...';
+            saveBtn.disabled = true;
+
+            const res  = await fetch(`/api/notas/${editTarget.notaId}/contenido`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contenido })
+            });
+            const data = await res.json();
+
+            saveBtn.textContent = 'Guardar cambios';
+            saveBtn.disabled = false;
+
+            if (!res.ok) { errorEl.textContent = data.error || 'Error al guardar.'; return; }
+
+            const meta = editTarget.li.querySelector('.note-meta');
+            meta.textContent = meta.textContent.replace(/\d+ palabras?/, `${data.palabras} ${data.palabras === 1 ? 'palabra' : 'palabras'}`);
+            cerrarEdit();
+        });
+
         // Renombrar nota
         let renameTarget = null;
 
@@ -833,6 +876,38 @@
         document.getElementById('renameInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter') document.getElementById('renameConfirmBtn').click();
             if (e.key === 'Escape') cerrarRename();
+        });
+
+        // Corregir con IA
+        document.getElementById('btnCorregir').addEventListener('click', async () => {
+            const texto = noteTextarea.value.trim();
+            const btn = document.getElementById('btnCorregir');
+            saveError.textContent = '';
+            if (!texto) { saveError.textContent = 'No hay texto para corregir.'; return; }
+
+            const textoOriginal = btn.textContent;
+            btn.textContent = 'Corrigiendo...';
+            btn.disabled = true;
+
+            try {
+                const res  = await fetch('/api/corregir', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ texto })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    saveError.textContent = data.error || 'Error al corregir.';
+                } else {
+                    noteTextarea.value = data.texto;
+                    finalTranscript = data.texto.trimEnd() + ' ';
+                }
+            } catch {
+                saveError.textContent = 'Error de conexión.';
+            }
+
+            btn.textContent = textoOriginal;
+            btn.disabled = false;
         });
 
         // Búsqueda en tiempo real

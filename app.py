@@ -105,11 +105,56 @@ def renombrar_nota(nota_id):
     return jsonify({'titulo': titulo})
 
 
+@app.route('/api/notas/<int:nota_id>/contenido', methods=['PATCH'])
+def editar_contenido(nota_id):
+    data = request.get_json()
+    contenido = (data.get('contenido') or '').strip()
+    if not contenido:
+        return jsonify({'error': 'El contenido no puede estar vacío'}), 400
+    palabras = len(contenido.split())
+    with get_db() as conn:
+        conn.execute(
+            'UPDATE notas SET contenido = ?, palabras = ? WHERE id = ?',
+            (contenido, palabras, nota_id)
+        )
+    return jsonify({'palabras': palabras})
+
+
 @app.route('/api/notas/<int:nota_id>', methods=['DELETE'])
 def borrar_nota(nota_id):
     with get_db() as conn:
         conn.execute('DELETE FROM notas WHERE id = ?', (nota_id,))
     return '', 204
+
+
+@app.route('/api/corregir', methods=['POST'])
+def corregir_texto():
+    if not client:
+        return jsonify({'error': 'Falta configurar GROQ_API_KEY en el archivo .env'}), 500
+    data = request.get_json()
+    texto = (data.get('texto') or '').strip()
+    if not texto:
+        return jsonify({'error': 'Texto vacío'}), 400
+    try:
+        response = client.chat.completions.create(
+            model='llama-3.3-70b-versatile',
+            max_tokens=2048,
+            messages=[
+                {
+                    'role': 'system',
+                    'content': (
+                        'Sos un corrector de texto. Tu única tarea es corregir puntuación, '
+                        'mayúsculas y eliminar muletillas (como "eh", "mmm", "este", "o sea", "digamos") '
+                        'del texto que te manden. '
+                        'Devolvé únicamente el texto corregido, sin comentarios ni explicaciones.'
+                    )
+                },
+                {'role': 'user', 'content': texto}
+            ]
+        )
+        return jsonify({'texto': response.choices[0].message.content})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/chat', methods=['POST'])
