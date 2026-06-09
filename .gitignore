@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 notas.db
 CLAUDE.md
+.env

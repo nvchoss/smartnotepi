@@ -1,9 +1,25 @@
 from flask import Flask, send_from_directory, jsonify, request
 from datetime import datetime
 import sqlite3
+import os
+
+from openai import OpenAI
 
 app = Flask(__name__)
 DB_PATH = 'notas.db'
+
+# Carga .env si existe
+_env_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(_env_path):
+    with open(_env_path) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _k, _v = _line.split('=', 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+
+GROQ_KEY = os.environ.get('GROQ_API_KEY')
+client = OpenAI(api_key=GROQ_KEY, base_url='https://api.groq.com/openai/v1') if GROQ_KEY else None
 
 
 def get_db():
@@ -75,11 +91,68 @@ def get_nota(nota_id):
     return jsonify(dict(row))
 
 
+@app.route('/api/notas/<int:nota_id>', methods=['PATCH'])
+def renombrar_nota(nota_id):
+    data = request.get_json()
+    titulo = (data.get('titulo') or '').strip()
+    if not titulo:
+        return jsonify({'error': 'El título no puede estar vacío'}), 400
+    try:
+        with get_db() as conn:
+            conn.execute('UPDATE notas SET titulo = ? WHERE id = ?', (titulo, nota_id))
+    except sqlite3.IntegrityError:
+        return jsonify({'error': 'Ya existe una nota con ese título'}), 409
+    return jsonify({'titulo': titulo})
+
+
 @app.route('/api/notas/<int:nota_id>', methods=['DELETE'])
 def borrar_nota(nota_id):
     with get_db() as conn:
         conn.execute('DELETE FROM notas WHERE id = ?', (nota_id,))
     return '', 204
+
+
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    if not client:
+        return jsonify({'error': 'Falta configurar GROQ_API_KEY en el archivo .env'}), 500
+
+    data = request.get_json()
+    nota_id = data.get('nota_id')
+    mensaje = (data.get('mensaje') or '').strip()
+    historial = data.get('historial', [])
+
+    if not mensaje:
+        return jsonify({'error': 'Mensaje vacío'}), 400
+
+    with get_db() as conn:
+        row = conn.execute('SELECT * FROM notas WHERE id = ?', (nota_id,)).fetchone()
+    if not row:
+        return jsonify({'error': 'Nota no encontrada'}), 404
+
+    nota = dict(row)
+
+    system_prompt = (
+        f'Sos un asistente que ayuda a analizar transcripciones de audio. '
+        f'La nota se llama "{nota["titulo"]}" y su contenido es:\n\n{nota["contenido"]}\n\n'
+        f'Respondé siempre en el mismo idioma que el usuario.'
+    )
+
+    messages = [{'role': 'system', 'content': system_prompt}]
+    role_map = {'model': 'assistant', 'ai': 'assistant'}
+    messages += [{'role': role_map.get(m['role'], m['role']), 'content': m['content']} for m in historial]
+    messages.append({'role': 'user', 'content': mensaje})
+
+    try:
+        response = client.chat.completions.create(
+            model='llama-3.3-70b-versatile',
+            max_tokens=1024,
+            messages=messages
+        )
+        text = response.choices[0].message.content
+        return jsonify({'respuesta': text})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
