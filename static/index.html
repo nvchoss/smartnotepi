@@ -5,49 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartNote Pi</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: Arial, sans-serif;
-            background-color: #e8e8e8;
-            display: flex;
+            background: #edf0f5;
             min-height: 100vh;
-            padding: 16px;
-        }
-
-        .main-container {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-            height: calc(100vh - 32px);
-        }
-
-        /* ===== PANEL IZQUIERDO ===== */
-        .left-panel {
-            flex: 0 0 calc(50% - 6px);
-            border: 2px solid #bbb;
-            border-radius: 8px;
-            background: #fff;
             display: flex;
             flex-direction: column;
-            height: 100%;
         }
 
+        /* ===== HEADER ===== */
+        .site-header {
+            background: #1b2d58;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 10px 24px;
+            gap: 20px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo-box {
+            width: 52px;
+            height: 52px;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 900;
+            color: #1b2d58;
+            text-align: center;
+            flex-shrink: 0;
+            letter-spacing: 1px;
+        }
+
+        .header-uni-text { font-size: 11px; line-height: 1.5; font-weight: 600; }
+        .header-slogan   { font-size: 9px; font-weight: 400; opacity: 0.7; letter-spacing: 0.5px; }
+
+        .header-divider { width: 1px; height: 40px; background: rgba(255,255,255,0.3); }
+
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-brand { font-size: 32px; font-weight: 900; letter-spacing: 3px; }
+
+        .header-right { font-size: 11px; text-align: right; line-height: 1.6; opacity: 0.85; }
+
+        /* ===== MAIN ===== */
+        .main-container {
+            flex: 1;
+            display: flex;
+            gap: 16px;
+            padding: 16px;
+            min-height: 0;
+        }
+
+        /* ===== PANELS ===== */
+        .panel {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #dde2ec;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .left-panel  { flex: 0 0 calc(50% - 8px); }
+        .right-panel { flex: 0 0 calc(50% - 8px); }
+
+        /* ===== PANEL HEADER ===== */
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid #eef0f5;
+            flex-shrink: 0;
+        }
+
+        .panel-title-row { display: flex; align-items: center; gap: 12px; }
+
+        .panel-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .panel-icon.orange { background: #f5a623; }
+        .panel-icon.blue   { background: #dce6f7; }
+        .panel-icon svg    { width: 22px; height: 22px; }
+
+        .panel-title-text { font-size: 15px; font-weight: 800; color: #1b2d58; letter-spacing: 0.5px; }
+        .panel-subtitle   { font-size: 12px; color: #999; margin-top: 2px; }
+
+        /* ===== BOTÓN SUBIR ARCHIVO ===== */
+        .btn-upload {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #f5c400;
+            color: #333;
+            border: none;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+
+        .btn-upload:hover { background: #deb000; }
+
+        /* ===== BARRA DE GRABACIÓN ===== */
         .recording-bar {
             display: flex;
             align-items: center;
-            padding: 8px 12px;
+            padding: 8px 14px;
             gap: 10px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #f0f2f7;
+            background: #fafbfd;
+            flex-shrink: 0;
         }
 
         .record-btn {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             background: #e83030;
             border-radius: 50%;
             flex-shrink: 0;
@@ -60,125 +165,154 @@
         }
 
         .record-btn:hover { background: #cc2020; transform: scale(1.05); }
-
-        .record-btn.recording {
-            background: #e87a10;
-            border-color: #c55e00;
-            animation: pulse 1.2s infinite;
-        }
-
-        .record-btn svg { width: 16px; height: 16px; }
+        .record-btn.recording { background: #e87a10; border-color: #c55e00; animation: pulse 1.2s infinite; }
+        .record-btn svg { width: 14px; height: 14px; }
 
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(232, 122, 16, 0.5); }
-            50%       { box-shadow: 0 0 0 6px rgba(232, 122, 16, 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(232,122,16,0.5); }
+            50%       { box-shadow: 0 0 0 6px rgba(232,122,16,0); }
         }
 
-        .recording-text { flex: 1; font-size: 14px; color: #333; }
+        .recording-text { flex: 1; font-size: 13px; color: #666; }
         .recording-text.active { color: #e87a10; font-style: italic; }
 
+        .lang-btn {
+            padding: 6px 14px;
+            border: 1px solid #3d6fd4;
+            border-radius: 5px;
+            background: #eef2fc;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            color: #2d5be3;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
 
+        .lang-btn:hover { background: #dce6ff; }
+
+        /* ===== DROP ZONE ===== */
+        .drop-zone {
+            margin: 12px 14px 4px;
+            border: 2px dashed #c0c8d8;
+            border-radius: 10px;
+            background: #f8f9fb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 12px;
+            gap: 4px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #3d6fd4;
+            background: #f0f4ff;
+        }
+
+        .drop-zone-title { font-size: 13px; font-weight: 600; color: #444; margin-top: 4px; }
+        .drop-zone-sub   { font-size: 11px; color: #aaa; }
+        .upload-status   { font-size: 12px; color: #3d6fd4; min-height: 16px; text-align: center; }
+
+        /* ===== TEXTAREA ===== */
         .note-textarea {
             flex: 1;
+            margin: 8px 14px;
             padding: 12px;
-            border: 1px solid #ccc;
-            margin: 10px;
-            border-radius: 4px;
+            border: 1px solid #dde2ec;
+            border-radius: 8px;
             resize: none;
             font-size: 13.5px;
             line-height: 1.65;
             color: #444;
             font-family: Arial, sans-serif;
             overflow-y: auto;
+            min-height: 60px;
         }
 
-        .btn-corregir { background: #7b5ea7; color: white; }
-        .btn-corregir:disabled { opacity: 0.55; cursor: not-allowed; }
-        .note-textarea:focus { outline: none; }
+        .note-textarea:focus { outline: none; border-color: #3d6fd4; }
 
+        /* ===== SAVE BAR ===== */
         .save-bar {
-            padding: 10px 12px 12px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .save-bar label { font-size: 12px; color: #666; display: block; margin-bottom: 6px; }
-
-        .save-bar-controls { display: flex; gap: 8px; align-items: center; }
-
-        .title-input {
-            flex: 1;
-            padding: 5px 8px;
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            font-size: 13px;
-            height: 28px;
-        }
-
-        .title-input:focus { outline: none; border-color: #888; }
-        .title-input.error { border-color: #e83030; }
-
-        .save-error {
-            font-size: 11px;
-            color: #e83030;
-            margin-top: 5px;
-            min-height: 16px;
-        }
-
-        .btn {
-            padding: 5px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
-            height: 28px;
-        }
-
-        .btn-guardar { background: #4a90d9; color: white; }
-        .btn-limpiar { background: #999; color: white; }
-
-        /* ===== PANEL DERECHO ===== */
-        .right-panel {
-            flex: 0 0 calc(50% - 6px);
-            border: 2px solid #bbb;
-            border-radius: 8px;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            padding: 12px;
-            gap: 12px;
-            height: 100%;
-            overflow-y: auto;
-        }
-
-        .search-bar {
-            display: flex;
-            align-items: center;
-            border: 1px solid #bbb;
-            border-radius: 20px;
-            padding: 6px 14px;
-            gap: 8px;
-            background: #fff;
+            padding: 8px 14px 12px;
+            border-top: 1px solid #eef0f5;
             flex-shrink: 0;
         }
 
-        .search-input { flex: 1; border: none; outline: none; font-size: 14px; }
-        .search-icon { color: #555; display: flex; align-items: center; }
-        .search-icon svg { width: 17px; height: 17px; }
+        .save-bar label { font-size: 12px; color: #666; display: block; margin-bottom: 5px; }
 
-        .notes-list { list-style: none; display: flex; flex-direction: column; }
+        .title-input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #dde2ec;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
 
-        /* Card de nota */
+        .title-input:focus { outline: none; border-color: #3d6fd4; }
+        .title-input.error { border-color: #e83030; }
+
+        .save-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+
+        .btn {
+            padding: 7px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .btn-guardar        { background: #2d5be3; color: white; }
+        .btn-guardar:hover  { background: #1e4bc8; }
+        .btn-limpiar        { background: #9ca3af; color: white; }
+        .btn-limpiar:hover  { background: #6b7280; }
+        .btn-corregir       { background: #7b5ea7; color: white; font-size: 12px; }
+        .btn-corregir:hover { background: #6a4e94; }
+        .btn-corregir:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        .save-error { font-size: 11px; color: #e83030; margin-top: 5px; min-height: 14px; }
+
+        /* ===== PANEL DERECHO ===== */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            border: 1px solid #dde2ec;
+            border-radius: 8px;
+            padding: 8px 12px;
+            gap: 8px;
+            margin: 12px 14px 6px;
+            flex-shrink: 0;
+        }
+
+        .search-input { flex: 1; border: none; outline: none; font-size: 13px; color: #444; background: transparent; }
+        .search-icon svg { width: 16px; height: 16px; display: block; }
+
+        .notes-list {
+            list-style: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 14px;
+            min-height: 0;
+        }
+
         .note-item {
             display: flex;
             align-items: center;
-            padding: 9px 4px;
-            border-bottom: 1px solid #ebebeb;
+            padding: 10px 4px;
+            border-bottom: 1px solid #f0f2f7;
             gap: 8px;
         }
 
         .note-item:last-child { border-bottom: none; }
-
-        .note-info { flex: 1; min-width: 0; }
+        .note-info  { flex: 1; min-width: 0; }
+        .note-actions { display: flex; gap: 5px; flex-shrink: 0; }
 
         .note-name {
             font-size: 13.5px;
@@ -189,124 +323,47 @@
             text-overflow: ellipsis;
         }
 
-        .note-meta {
-            font-size: 11px;
-            color: #aaa;
-            margin-top: 2px;
-            display: block;
-        }
+        .note-meta { font-size: 11px; color: #bbb; margin-top: 2px; display: block; }
+        .no-notas  { font-size: 13px; color: #bbb; text-align: center; padding: 30px 0; }
 
-        .note-actions { display: flex; gap: 5px; flex-shrink: 0; }
-
-        .action-btn {
-            width: 30px;
-            height: 30px;
-            border-radius: 5px;
-            cursor: pointer;
+        .panel-hint {
+            padding: 10px 16px;
+            font-size: 12px;
+            color: #bbb;
+            border-top: 1px solid #f0f2f7;
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: white;
-        }
-
-        .action-btn svg { width: 15px; height: 15px; }
-
-        .action-btn.view     { border: 1px solid #98b4de; color: #4a75c0; }
-        .action-btn.download { border: 1px solid #98b4de; color: #4a75c0; }
-
-        .action-btn.delete {
-            border: 1px solid #e8a0a0;
-            color: #cc4444;
-            background: #fff5f5;
-        }
-
-        .no-notas { font-size: 13px; color: #aaa; text-align: center; padding: 20px 0; }
-
-        /* ===== MODAL ===== */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.open { display: flex; }
-
-        .modal-box {
-            background: #fff;
-            border-radius: 10px;
-            width: 560px;
-            max-width: 90vw;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 18px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .modal-title { font-size: 15px; font-weight: bold; color: #333; }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: #888;
-            line-height: 1;
-        }
-
-        .modal-close:hover { color: #333; }
-
-        .modal-meta { font-size: 11px; color: #aaa; padding: 6px 18px 0; }
-
-        .modal-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 14px 18px 18px;
-            font-size: 13.5px;
-            line-height: 1.7;
-            color: #444;
-            white-space: pre-wrap;
+            gap: 6px;
+            flex-shrink: 0;
         }
 
         /* ===== MENÚ ⋮ ===== */
         .menu-wrapper { position: relative; }
 
         .menu-btn {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             border-radius: 5px;
-            border: 1px solid #ddd;
+            border: 1px solid #dde2ec;
             background: white;
             cursor: pointer;
-            font-size: 18px;
-            color: #666;
+            font-size: 16px;
+            color: #777;
             display: flex;
             align-items: center;
             justify-content: center;
-            line-height: 1;
         }
 
-        .menu-btn:hover { background: #f5f5f5; border-color: #bbb; }
+        .menu-btn:hover { background: #f5f5f5; }
 
         .dropdown-menu {
             position: absolute;
             right: 0;
             top: calc(100% + 4px);
             background: white;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #dde2ec;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
             z-index: 50;
             min-width: 160px;
             overflow: hidden;
@@ -324,11 +381,49 @@
             color: #333;
         }
 
-        .dropdown-item:hover { background: #f5f5f5; }
-        .dropdown-item.item-chat { color: #4a75c0; font-weight: 500; }
+        .dropdown-item:hover     { background: #f5f7ff; }
+        .dropdown-item.item-chat { color: #3d6fd4; font-weight: 500; }
         .dropdown-item.item-delete { color: #cc4444; }
 
-        /* ===== CHAT MODAL ===== */
+        /* ===== MODALES ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 12px;
+            width: 560px;
+            max-width: 90vw;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title   { font-size: 15px; font-weight: bold; color: #333; }
+        .modal-close   { background: none; border: none; font-size: 18px; cursor: pointer; color: #aaa; line-height: 1; }
+        .modal-close:hover { color: #333; }
+        .modal-meta    { font-size: 11px; color: #bbb; padding: 6px 18px 0; }
+        .modal-content { flex: 1; overflow-y: auto; padding: 14px 18px 18px; font-size: 13.5px; line-height: 1.7; color: #444; white-space: pre-wrap; }
+
+        /* ===== CHAT ===== */
         .chat-box { width: 600px; max-height: 85vh; }
 
         .chat-messages {
@@ -341,22 +436,16 @@
             min-height: 200px;
         }
 
-        .chat-empty { text-align: center; color: #aaa; font-size: 13px; padding: 20px 0 10px; }
+        .chat-empty { text-align: center; color: #bbb; font-size: 13px; padding: 20px 0 10px; }
 
-        .chat-suggestions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 12px;
-        }
+        .chat-suggestions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
 
         .suggestion-chip {
             padding: 6px 12px;
             border: 1px solid #c0d0ef;
             border-radius: 16px;
             background: #f0f4ff;
-            color: #4a75c0;
+            color: #3d6fd4;
             font-size: 12px;
             cursor: pointer;
         }
@@ -373,48 +462,95 @@
             word-break: break-word;
         }
 
-        .chat-bubble.user {
-            background: #4a90d9;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 3px;
-        }
-
-        .chat-bubble.ai {
-            background: #f2f2f2;
-            color: #333;
-            align-self: flex-start;
-            border-bottom-left-radius: 3px;
-        }
-
-        .chat-bubble.thinking { background: #f2f2f2; color: #aaa; align-self: flex-start; font-style: italic; }
+        .chat-bubble.user     { background: #2d5be3; color: white; align-self: flex-end; border-bottom-right-radius: 3px; }
+        .chat-bubble.ai       { background: #f2f2f2; color: #333; align-self: flex-start; border-bottom-left-radius: 3px; }
+        .chat-bubble.thinking { background: #f2f2f2; color: #bbb; align-self: flex-start; font-style: italic; }
 
         .chat-input-bar {
             display: flex;
             gap: 8px;
             padding: 10px 18px 14px;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid #eee;
             flex-shrink: 0;
         }
 
         .chat-input {
             flex: 1;
             padding: 7px 10px;
-            border: 1px solid #bbb;
+            border: 1px solid #dde2ec;
             border-radius: 6px;
             font-size: 13px;
             outline: none;
             font-family: Arial, sans-serif;
         }
 
-        .chat-input:focus { border-color: #888; }
+        .chat-input:focus { border-color: #3d6fd4; }
+
+        /* ===== FOOTER ===== */
+        .site-footer {
+            background: #1b2d58;
+            color: white;
+            text-align: center;
+            padding: 14px;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .footer-accent { color: #f5c400; font-weight: 700; }
     </style>
 </head>
 <body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="site-header">
+        <div class="header-left">
+            <img src="/static/logo-usm.png" alt="USM" style="width:52px;height:52px;object-fit:contain;background:white;border-radius:4px;padding:2px">
+            <div class="header-uni-text">
+                <div>UNIVERSIDAD TÉCNICA</div>
+                <div>FEDERICO SANTA MARÍA</div>
+                <div class="header-slogan">EX UMBRA IN SOLEM</div>
+            </div>
+        </div>
+        <div class="header-center">
+            <div class="header-divider"></div>
+            <span class="header-brand">SMARTNOTE</span>
+            <div class="header-divider"></div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN ===== -->
     <div class="main-container">
 
         <!-- ===== PANEL IZQUIERDO ===== -->
-        <div class="left-panel">
+        <div class="panel left-panel">
+
+            <div class="panel-header">
+                <div class="panel-title-row">
+                    <div class="panel-icon orange">
+                        <svg viewBox="0 0 24 24" fill="white" stroke="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="9" y="2" width="6" height="11" rx="3" fill="white"/>
+                            <path d="M5 10a7 7 0 0014 0" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            <line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="panel-title-text">TRANSCRIPTOR</div>
+                        <div class="panel-subtitle">Convierte audio en texto de manera rápida y precisa.</div>
+                    </div>
+                </div>
+                <button id="subirArchivoBtn" class="btn-upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px">
+                        <polyline points="16 16 12 12 8 16"/>
+                        <line x1="12" y1="12" x2="12" y2="21"/>
+                        <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+                    </svg>
+                    SUBIR ARCHIVO
+                </button>
+                <input type="file" id="fileInput" accept=".mp3,.wav,.m4a,.mp4,audio/*,video/mp4" hidden>
+            </div>
+
+            <!-- Barra de grabación con micrófono -->
             <div class="recording-bar">
                 <button id="recordBtn" class="record-btn" title="Iniciar grabación">
                     <svg id="iconMic" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -423,44 +559,83 @@
                         <line x1="12" y1="17" x2="12" y2="21"/>
                         <line x1="8"  y1="21" x2="16" y2="21"/>
                     </svg>
-                    <svg id="iconPause" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" style="display:none;">
+                    <svg id="iconPause" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" style="display:none">
                         <rect x="6"  y="4" width="4" height="16" rx="1"/>
                         <rect x="14" y="4" width="4" height="16" rx="1"/>
                     </svg>
                 </button>
                 <span id="recordingText" class="recording-text">Presioná el micrófono para grabar</span>
-                <button id="langBtn" title="Cambiar idioma" style="padding:4px 10px;border:1px solid #ccc;border-radius:5px;background:#fff;cursor:pointer;font-size:12px;font-weight:700;color:#555;flex-shrink:0">ESP</button>
+                <button id="langBtn" class="lang-btn" title="Cambiar idioma">ESPAÑOL</button>
+            </div>
+
+            <!-- Zona de subida de archivo -->
+            <div class="drop-zone" id="dropZone">
+                <svg viewBox="0 0 80 28" fill="none" stroke="#3d6fd4" stroke-width="2.5" stroke-linecap="round" width="80" height="28">
+                    <polyline points="0,14 10,4 20,24 30,7 40,21 50,4 60,24 70,9 80,14"/>
+                </svg>
+                <div class="drop-zone-title">Sube tu archivo de audio o video</div>
+                <div class="drop-zone-sub">Formatos soportados: .mp3, .wav, .m4a, .mp4</div>
+                <div class="upload-status" id="uploadStatus"></div>
             </div>
 
             <textarea id="noteTextarea" class="note-textarea" placeholder="El texto transcripto aparecerá aquí..."></textarea>
 
             <div class="save-bar">
-                <label>Título de la nota</label>
-                <div class="save-bar-controls">
-                    <input type="text" id="titleInput" class="title-input" placeholder="Sin título">
-                    <button class="btn btn-guardar" id="btnGuardar">Guardar</button>
+                <label>Título de la nota (opcional)</label>
+                <input type="text" id="titleInput" class="title-input" placeholder="Sin título">
+                <div class="save-buttons">
+                    <button class="btn btn-guardar" id="btnGuardar">GUARDAR</button>
                     <button class="btn btn-corregir" id="btnCorregir">Corregir IA</button>
-                    <button class="btn btn-limpiar" id="btnLimpiar">Limpiar</button>
+                    <button class="btn btn-limpiar" id="btnLimpiar">LIMPIAR</button>
                 </div>
                 <div class="save-error" id="saveError"></div>
             </div>
         </div>
 
         <!-- ===== PANEL DERECHO ===== -->
-        <div class="right-panel">
+        <div class="panel right-panel">
+
+            <div class="panel-header">
+                <div class="panel-title-row">
+                    <div class="panel-icon blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#3d6fd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="panel-title-text">TRANSCRIPCIONES GUARDADAS</div>
+                        <div class="panel-subtitle">Accede a tus transcripciones organizadas por asignatura.</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="search-bar">
-                <input type="text" id="searchInput" class="search-input" placeholder="Buscar notas...">
                 <span class="search-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="7"/>
                         <line x1="16.5" y1="16.5" x2="22" y2="22"/>
                     </svg>
                 </span>
+                <input type="text" id="searchInput" class="search-input" placeholder="Buscar transcripciones...">
             </div>
-            <ul class="notes-list" id="notesList"></ul>
-        </div>
 
+            <ul class="notes-list" id="notesList"></ul>
+
+            <div class="panel-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2" style="width:14px;height:14px;flex-shrink:0">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <circle cx="12" cy="16" r="0.5" fill="#ccc"/>
+                </svg>
+                Haz clic en los tres puntos para más opciones.
+            </div>
+        </div>
     </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+        © 2026 SMARTNOTE - <span class="footer-accent">USM</span> &nbsp;|&nbsp; Todos los derechos reservados
+    </footer>
 
     <!-- ===== MODAL CHAT IA ===== -->
     <div class="modal-overlay" id="chatOverlay">
@@ -477,24 +652,6 @@
         </div>
     </div>
 
-    <!-- ===== MODAL RENOMBRAR ===== -->
-    <div class="modal-overlay" id="renameOverlay">
-        <div class="modal-box" style="max-width:380px">
-            <div class="modal-header">
-                <span class="modal-title">Renombrar nota</span>
-                <button class="modal-close" id="renameClose">✕</button>
-            </div>
-            <div style="padding:16px 18px 18px">
-                <input type="text" id="renameInput" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-size:14px">
-                <div id="renameError" style="color:#cc4444;font-size:12px;margin-top:6px;min-height:16px"></div>
-                <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
-                    <button id="renameCancelBtn" style="padding:7px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:13px">Cancelar</button>
-                    <button id="renameConfirmBtn" style="padding:7px 16px;border:none;border-radius:6px;background:#4a75c0;color:#fff;cursor:pointer;font-size:13px;font-weight:500">Guardar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- ===== MODAL EDITAR NOTA ===== -->
     <div class="modal-overlay" id="editOverlay">
         <div class="modal-box" style="width:600px;max-height:85vh">
@@ -503,11 +660,29 @@
                 <button class="modal-close" id="editClose">✕</button>
             </div>
             <div style="padding:14px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden">
-                <textarea id="editTextarea" style="flex:1;resize:none;border:1px solid #ccc;border-radius:6px;padding:10px;font-size:13.5px;line-height:1.65;font-family:Arial,sans-serif;min-height:300px;color:#444;outline:none"></textarea>
+                <textarea id="editTextarea" style="flex:1;resize:none;border:1px solid #dde2ec;border-radius:8px;padding:10px;font-size:13.5px;line-height:1.65;font-family:Arial,sans-serif;min-height:300px;color:#444;outline:none"></textarea>
                 <div id="editError" style="color:#cc4444;font-size:12px;min-height:16px"></div>
                 <div style="display:flex;gap:8px;justify-content:flex-end">
                     <button id="editCancelBtn" style="padding:7px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:13px">Cancelar</button>
-                    <button id="editSaveBtn" style="padding:7px 16px;border:none;border-radius:6px;background:#4a75c0;color:#fff;cursor:pointer;font-size:13px;font-weight:500">Guardar cambios</button>
+                    <button id="editSaveBtn" style="padding:7px 16px;border:none;border-radius:6px;background:#2d5be3;color:#fff;cursor:pointer;font-size:13px;font-weight:600">Guardar cambios</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL RENOMBRAR ===== -->
+    <div class="modal-overlay" id="renameOverlay">
+        <div class="modal-box" style="max-width:380px">
+            <div class="modal-header">
+                <span class="modal-title">Renombrar nota</span>
+                <button class="modal-close" id="renameClose">✕</button>
+            </div>
+            <div style="padding:16px 18px 18px">
+                <input type="text" id="renameInput" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #dde2ec;border-radius:6px;font-size:14px">
+                <div id="renameError" style="color:#cc4444;font-size:12px;margin-top:6px;min-height:16px"></div>
+                <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+                    <button id="renameCancelBtn" style="padding:7px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:13px">Cancelar</button>
+                    <button id="renameConfirmBtn" style="padding:7px 16px;border:none;border-radius:6px;background:#2d5be3;color:#fff;cursor:pointer;font-size:13px;font-weight:600">Guardar</button>
                 </div>
             </div>
         </div>
@@ -532,6 +707,7 @@
         const iconPause     = document.getElementById('iconPause');
         const recordingText = document.getElementById('recordingText');
         const noteTextarea  = document.getElementById('noteTextarea');
+        const uploadStatus  = document.getElementById('uploadStatus');
 
         let isRecording = false;
         let finalTranscript = '';
@@ -541,10 +717,10 @@
         langBtn.addEventListener('click', () => {
             if (currentLang === 'es-AR') {
                 currentLang = 'en-US';
-                langBtn.textContent = 'EN';
+                langBtn.textContent = 'INGLÉS';
             } else {
                 currentLang = 'es-AR';
-                langBtn.textContent = 'ESP';
+                langBtn.textContent = 'ESPAÑOL';
             }
             if (recognition) recognition.lang = currentLang;
         });
@@ -623,20 +799,51 @@
         document.getElementById('btnLimpiar').addEventListener('click', () => {
             finalTranscript = '';
             noteTextarea.value = '';
+            uploadStatus.textContent = '';
             if (isRecording && recognition) {
                 try { recognition.stop(); } catch (_) {}
                 setTimeout(() => { try { recognition.start(); } catch (_) {} }, 100);
             }
         });
 
+        // ===== SUBIR ARCHIVO =====
+        const fileInput       = document.getElementById('fileInput');
+        const dropZone        = document.getElementById('dropZone');
+        const subirArchivoBtn = document.getElementById('subirArchivoBtn');
+
+        subirArchivoBtn.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => { if (fileInput.files[0]) procesarArchivo(fileInput.files[0]); });
+
+        dropZone.addEventListener('dragover',  (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) procesarArchivo(e.dataTransfer.files[0]);
+        });
+
+        async function procesarArchivo(file) {
+            uploadStatus.textContent = `Transcribiendo "${file.name}"...`;
+            const formData = new FormData();
+            formData.append('archivo', file);
+            try {
+                const res  = await fetch('/api/transcribir', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) { uploadStatus.textContent = data.error || 'Error al transcribir.'; return; }
+                noteTextarea.value = data.texto;
+                finalTranscript = data.texto.trimEnd() + ' ';
+                uploadStatus.textContent = `✓ "${file.name}" transcripto correctamente`;
+            } catch {
+                uploadStatus.textContent = 'Error de conexión al transcribir.';
+            }
+            fileInput.value = '';
+        }
+
         // ===== NOTAS =====
         const notesList  = document.getElementById('notesList');
         const titleInput = document.getElementById('titleInput');
         const saveError  = document.getElementById('saveError');
-
-        function wordCount(text) {
-            return text.trim().split(/\s+/).filter(Boolean).length;
-        }
 
         function renderNota(nota) {
             const li = document.createElement('li');
@@ -706,7 +913,6 @@
             actualizarListaVacia();
         }
 
-        // Guardar nota
         document.getElementById('btnGuardar').addEventListener('click', async () => {
             const titulo    = titleInput.value.trim();
             const contenido = noteTextarea.value.trim();
@@ -738,21 +944,17 @@
                 return;
             }
 
-            if (!res.ok) {
-                saveError.textContent = 'Error al guardar. Intentá de nuevo.';
-                return;
-            }
+            if (!res.ok) { saveError.textContent = 'Error al guardar. Intentá de nuevo.'; return; }
 
             const nota = await res.json();
             notesList.insertBefore(renderNota(nota), notesList.firstChild);
             actualizarListaVacia();
-
             titleInput.value = '';
-            finalTranscript = '';
+            finalTranscript  = '';
             noteTextarea.value = '';
+            uploadStatus.textContent = '';
         });
 
-        // Ver nota (modal)
         async function verNota(id) {
             const res  = await fetch(`/api/notas/${id}`);
             const nota = await res.json();
@@ -762,36 +964,26 @@
             document.getElementById('modalOverlay').classList.add('open');
         }
 
-        document.getElementById('modalClose').addEventListener('click', () => {
-            document.getElementById('modalOverlay').classList.remove('open');
-        });
+        document.getElementById('modalClose').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('open'));
+        document.getElementById('modalOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
 
-        document.getElementById('modalOverlay').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget)
-                e.currentTarget.classList.remove('open');
-        });
-
-        // Descargar nota como .txt
         async function descargarNota(id, titulo) {
             const res  = await fetch(`/api/notas/${id}`);
             const nota = await res.json();
             const blob = new Blob([nota.contenido], { type: 'text/plain' });
             const url  = URL.createObjectURL(blob);
             const a    = document.createElement('a');
-            a.href     = url;
-            a.download = `${titulo}.txt`;
-            a.click();
+            a.href = url; a.download = `${titulo}.txt`; a.click();
             URL.revokeObjectURL(url);
         }
 
-        // Borrar nota
         async function borrarNota(id, li) {
             await fetch(`/api/notas/${id}`, { method: 'DELETE' });
             li.remove();
             actualizarListaVacia();
         }
 
-        // Editar nota
+        // ===== EDITAR NOTA =====
         let editTarget = null;
 
         async function editarNota(notaId, titulo, li) {
@@ -808,9 +1000,7 @@
         const cerrarEdit = () => document.getElementById('editOverlay').classList.remove('open');
         document.getElementById('editClose').addEventListener('click', cerrarEdit);
         document.getElementById('editCancelBtn').addEventListener('click', cerrarEdit);
-        document.getElementById('editOverlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('editOverlay')) cerrarEdit();
-        });
+        document.getElementById('editOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('editOverlay')) cerrarEdit(); });
 
         document.getElementById('editSaveBtn').addEventListener('click', async () => {
             const contenido = document.getElementById('editTextarea').value.trim();
@@ -827,7 +1017,6 @@
                 body: JSON.stringify({ contenido })
             });
             const data = await res.json();
-
             saveBtn.textContent = 'Guardar cambios';
             saveBtn.disabled = false;
 
@@ -838,7 +1027,7 @@
             cerrarEdit();
         });
 
-        // Renombrar nota
+        // ===== RENOMBRAR NOTA =====
         let renameTarget = null;
 
         function renombrarNota(notaId, tituloActual, li) {
@@ -846,15 +1035,13 @@
             document.getElementById('renameInput').value = tituloActual;
             document.getElementById('renameError').textContent = '';
             document.getElementById('renameOverlay').classList.add('open');
-            setTimeout(() => { document.getElementById('renameInput').select(); }, 50);
+            setTimeout(() => document.getElementById('renameInput').select(), 50);
         }
 
         const cerrarRename = () => document.getElementById('renameOverlay').classList.remove('open');
         document.getElementById('renameClose').addEventListener('click', cerrarRename);
         document.getElementById('renameCancelBtn').addEventListener('click', cerrarRename);
-        document.getElementById('renameOverlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('renameOverlay')) cerrarRename();
-        });
+        document.getElementById('renameOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('renameOverlay')) cerrarRename(); });
 
         document.getElementById('renameConfirmBtn').addEventListener('click', async () => {
             const nuevoTitulo = document.getElementById('renameInput').value.trim();
@@ -878,14 +1065,28 @@
             if (e.key === 'Escape') cerrarRename();
         });
 
-        // Corregir con IA
+        // ===== BÚSQUEDA =====
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            notesList.querySelectorAll('.note-item').forEach(li => {
+                li.style.display = li.querySelector('.note-name').textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+
+        cargarNotas();
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-menu').forEach(d => d.style.display = 'none');
+        });
+
+        // ===== CORREGIR CON IA =====
         document.getElementById('btnCorregir').addEventListener('click', async () => {
             const texto = noteTextarea.value.trim();
-            const btn = document.getElementById('btnCorregir');
+            const btn   = document.getElementById('btnCorregir');
             saveError.textContent = '';
             if (!texto) { saveError.textContent = 'No hay texto para corregir.'; return; }
 
-            const textoOriginal = btn.textContent;
+            const label = btn.textContent;
             btn.textContent = 'Corrigiendo...';
             btn.disabled = true;
 
@@ -906,24 +1107,8 @@
                 saveError.textContent = 'Error de conexión.';
             }
 
-            btn.textContent = textoOriginal;
+            btn.textContent = label;
             btn.disabled = false;
-        });
-
-        // Búsqueda en tiempo real
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase();
-            notesList.querySelectorAll('.note-item').forEach(li => {
-                const nombre = li.querySelector('.note-name').textContent.toLowerCase();
-                li.style.display = nombre.includes(q) ? '' : 'none';
-            });
-        });
-
-        // Cargar notas al iniciar
-        cargarNotas();
-
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown-menu').forEach(d => d.style.display = 'none');
         });
 
         // ===== CHAT IA =====
@@ -1005,11 +1190,7 @@
                 const res  = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        nota_id:  currentChatNotaId,
-                        mensaje,
-                        historial: history.slice(0, -1)
-                    })
+                    body: JSON.stringify({ nota_id: currentChatNotaId, mensaje, historial: history.slice(0, -1) })
                 });
                 const data = await res.json();
                 thinking.remove();
@@ -1044,12 +1225,8 @@
         document.getElementById('chatInput').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensajeChat(); }
         });
-        document.getElementById('chatClose').addEventListener('click', () => {
-            document.getElementById('chatOverlay').classList.remove('open');
-        });
-        document.getElementById('chatOverlay').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-        });
+        document.getElementById('chatClose').addEventListener('click', () => document.getElementById('chatOverlay').classList.remove('open'));
+        document.getElementById('chatOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
     </script>
 </body>
 </html>

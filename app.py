@@ -6,6 +6,7 @@ import os
 from openai import OpenAI
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 25 * 1024 * 1024  # 25 MB límite de Groq
 DB_PATH = 'notas.db'
 
 # Carga .env si existe
@@ -125,6 +126,25 @@ def borrar_nota(nota_id):
     with get_db() as conn:
         conn.execute('DELETE FROM notas WHERE id = ?', (nota_id,))
     return '', 204
+
+
+@app.route('/api/transcribir', methods=['POST'])
+def transcribir_audio():
+    if not client:
+        return jsonify({'error': 'Falta configurar GROQ_API_KEY en el archivo .env'}), 500
+    if 'archivo' not in request.files:
+        return jsonify({'error': 'No se recibió ningún archivo'}), 400
+    archivo = request.files['archivo']
+    if not archivo.filename:
+        return jsonify({'error': 'Archivo inválido'}), 400
+    try:
+        response = client.audio.transcriptions.create(
+            model='whisper-large-v3',
+            file=(archivo.filename, archivo.stream, archivo.content_type),
+        )
+        return jsonify({'texto': response.text})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/corregir', methods=['POST'])
