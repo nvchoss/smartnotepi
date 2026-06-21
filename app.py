@@ -32,14 +32,25 @@ def get_db():
 def init_db():
     with get_db() as conn:
         conn.execute('''
-            CREATE TABLE IF NOT EXISTS notas (
-                id       INTEGER PRIMARY KEY AUTOINCREMENT,
-                titulo   TEXT    UNIQUE NOT NULL,
-                contenido TEXT   NOT NULL,
-                fecha    TEXT    NOT NULL,
-                palabras INTEGER NOT NULL
+            CREATE TABLE IF NOT EXISTS carpetas (
+                id     INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT    UNIQUE NOT NULL,
+                fecha  TEXT    NOT NULL
             )
         ''')
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS notas (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                titulo     TEXT    UNIQUE NOT NULL,
+                contenido  TEXT    NOT NULL,
+                fecha      TEXT    NOT NULL,
+                palabras   INTEGER NOT NULL,
+                carpeta_id INTEGER
+            )
+        ''')
+        cols = [r[1] for r in conn.execute('PRAGMA table_info(notas)').fetchall()]
+        if 'carpeta_id' not in cols:
+            conn.execute('ALTER TABLE notas ADD COLUMN carpeta_id INTEGER')
 
 
 @app.route('/')
@@ -49,10 +60,17 @@ def index():
 
 @app.route('/api/notas', methods=['GET'])
 def get_notas():
+    carpeta_id = request.args.get('carpeta_id')
     with get_db() as conn:
-        rows = conn.execute(
-            'SELECT id, titulo, fecha, palabras FROM notas ORDER BY id DESC'
-        ).fetchall()
+        if carpeta_id is not None:
+            rows = conn.execute(
+                'SELECT id, titulo, fecha, palabras, carpeta_id FROM notas WHERE carpeta_id = ? ORDER BY id DESC',
+                (carpeta_id,)
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                'SELECT id, titulo, fecha, palabras, carpeta_id FROM notas WHERE carpeta_id IS NULL ORDER BY id DESC'
+            ).fetchall()
     return jsonify([dict(r) for r in rows])
 
 
@@ -125,6 +143,66 @@ def editar_contenido(nota_id):
 def borrar_nota(nota_id):
     with get_db() as conn:
         conn.execute('DELETE FROM notas WHERE id = ?', (nota_id,))
+    return '', 204
+
+
+@app.route('/api/notas/<int:nota_id>/carpeta', methods=['PATCH'])
+def mover_nota_carpeta(nota_id):
+    data = request.get_json()
+    carpeta_id = data.get('carpeta_id')
+    with get_db() as conn:
+        conn.execute('UPDATE notas SET carpeta_id = ? WHERE id = ?', (carpeta_id, nota_id))
+    return jsonify({'carpeta_id': carpeta_id})
+
+
+@app.route('/api/carpetas', methods=['GET'])
+def get_carpetas():
+    with get_db() as conn:
+        rows = conn.execute('''
+            SELECT c.id, c.nombre, c.fecha, COUNT(n.id) as total
+            FROM carpetas c
+            LEFT JOIN notas n ON n.carpeta_id = c.id
+            GROUP BY c.id
+            ORDER BY c.nombre
+        ''').fetchall()
+    return jsonify([dict(r) for r in rows])
+
+
+@app.route('/api/carpetas', methods=['POST'])
+def crear_carpeta():
+    data = request.get_json()
+    nombre = (data.get('nombre') or '').strip()
+    if not nombre:
+        return jsonify({'error': 'El nombre no puede estar vacío'}), 400
+    fecha = datetime.now().strftime('%d/%m/%Y %H:%M')
+    try:
+        with get_db() as conn:
+            cur = conn.execute('INSERT INTO carpetas (nombre, fecha) VALUES (?, ?)', (nombre, fecha))
+            carpeta_id = cur.lastrowid
+    except sqlite3.IntegrityError:
+        return jsonify({'error': 'Ya existe una carpeta con ese nombre'}), 409
+    return jsonify({'id': carpeta_id, 'nombre': nombre, 'fecha': fecha, 'total': 0}), 201
+
+
+@app.route('/api/carpetas/<int:carpeta_id>', methods=['PATCH'])
+def renombrar_carpeta(carpeta_id):
+    data = request.get_json()
+    nombre = (data.get('nombre') or '').strip()
+    if not nombre:
+        return jsonify({'error': 'El nombre no puede estar vacío'}), 400
+    try:
+        with get_db() as conn:
+            conn.execute('UPDATE carpetas SET nombre = ? WHERE id = ?', (nombre, carpeta_id))
+    except sqlite3.IntegrityError:
+        return jsonify({'error': 'Ya existe una carpeta con ese nombre'}), 409
+    return jsonify({'nombre': nombre})
+
+
+@app.route('/api/carpetas/<int:carpeta_id>', methods=['DELETE'])
+def borrar_carpeta(carpeta_id):
+    with get_db() as conn:
+        conn.execute('UPDATE notas SET carpeta_id = NULL WHERE carpeta_id = ?', (carpeta_id,))
+        conn.execute('DELETE FROM carpetas WHERE id = ?', (carpeta_id,))
     return '', 204
 
 

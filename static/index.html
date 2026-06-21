@@ -497,6 +497,123 @@
         }
 
         .footer-accent { color: #f5c400; font-weight: 700; }
+
+        /* ===== CARPETAS ===== */
+        #carpetasOverlay { z-index: 90; }
+
+        .btn-carpetas {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 13px;
+            background: #1b2d58;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            transition: background 0.15s;
+        }
+
+        .btn-carpetas:hover { background: #253f7a; }
+        .btn-carpetas svg { width: 14px; height: 14px; }
+
+        .carpetas-box { width: 720px; max-width: 92vw; max-height: 90vh; }
+
+        .carpetas-screen {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .carpetas-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 18px 18px;
+        }
+
+        .folder-card {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border: 1px solid #e8ecf3;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+
+        .folder-card-clickable {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            cursor: pointer;
+            min-width: 0;
+        }
+
+        .folder-card-clickable:hover .folder-card-name { color: #3d6fd4; }
+
+        .folder-card-info { flex: 1; min-width: 0; }
+        .folder-card-name { font-size: 14px; font-weight: 600; color: #1b2d58; transition: color 0.15s; }
+        .folder-card-count { font-size: 12px; color: #aaa; margin-top: 2px; }
+        .folder-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        .folder-action-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: 1px solid #dde2ec;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+            transition: background 0.15s, color 0.15s, border-color 0.15s;
+        }
+
+        .folder-action-btn:hover { background: #f5f5f5; }
+        .folder-action-btn.delete:hover { background: #fff0f0; color: #cc4444; border-color: #cc4444; }
+        .folder-action-btn svg { width: 14px; height: 14px; pointer-events: none; }
+
+        .no-carpetas { font-size: 13px; color: #bbb; text-align: center; padding: 40px 0; }
+
+        .folder-detail-notes {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 14px;
+            list-style: none;
+            min-height: 0;
+        }
+
+        .mover-box { max-width: 360px; }
+
+        .mover-carpeta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 14px;
+            text-align: left;
+            background: none;
+            border: 1px solid #e8ecf3;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 8px;
+            font-family: Arial, sans-serif;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .mover-carpeta-item:hover { background: #f6f8ff; border-color: #3d6fd4; }
+        .mover-carpeta-item.quitar { color: #cc4444; }
+        .mover-carpeta-item.quitar:hover { background: #fff0f0; border-color: #cc4444; }
+        .mover-carpeta-item svg { width: 16px; height: 16px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -607,6 +724,12 @@
                         <div class="panel-subtitle">Accede a tus transcripciones organizadas por asignatura.</div>
                     </div>
                 </div>
+                <button id="btnCarpetas" class="btn-carpetas">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                    </svg>
+                    CARPETAS
+                </button>
             </div>
 
             <div class="search-bar">
@@ -697,6 +820,84 @@
             </div>
             <div class="modal-meta" id="modalMeta"></div>
             <div class="modal-content" id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- ===== CARPETAS OVERLAY ===== -->
+    <div class="modal-overlay" id="carpetasOverlay">
+        <div class="modal-box carpetas-box">
+            <!-- Screen 1: Lista de carpetas -->
+            <div id="screenCarpetas" class="carpetas-screen">
+                <div class="modal-header">
+                    <span class="modal-title">Carpetas</span>
+                    <div style="display:flex;gap:8px;align-items:center">
+                        <button id="btnNuevaCarpeta" class="btn btn-guardar" style="font-size:12px;padding:6px 14px">+ Nueva carpeta</button>
+                        <button class="modal-close" id="carpetasClose">✕</button>
+                    </div>
+                </div>
+                <div class="carpetas-list-container" id="carpetasList"></div>
+            </div>
+            <!-- Screen 2: Notas en una carpeta -->
+            <div id="screenFolderDetail" class="carpetas-screen" style="display:none">
+                <div class="modal-header">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <button id="btnVolverCarpetas" style="background:none;border:none;cursor:pointer;color:#3d6fd4;font-size:13px;font-weight:600;padding:0">← Volver</button>
+                        <div>
+                            <div class="modal-title" id="folderDetailNombre"></div>
+                            <div style="font-size:11px;color:#bbb;margin-top:1px" id="folderDetailCount"></div>
+                        </div>
+                    </div>
+                    <button class="modal-close" id="folderDetailClose">✕</button>
+                </div>
+                <ul class="folder-detail-notes" id="folderNotasList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL NUEVA CARPETA ===== -->
+    <div class="modal-overlay" id="nuevaCarpetaOverlay">
+        <div class="modal-box" style="max-width:380px">
+            <div class="modal-header">
+                <span class="modal-title">Nueva carpeta</span>
+                <button class="modal-close" id="nuevaCarpetaClose">✕</button>
+            </div>
+            <div style="padding:16px 18px 18px">
+                <input type="text" id="nuevaCarpetaInput" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #dde2ec;border-radius:6px;font-size:14px;font-family:Arial,sans-serif" placeholder="Nombre de la carpeta">
+                <div id="nuevaCarpetaError" style="color:#cc4444;font-size:12px;margin-top:6px;min-height:16px"></div>
+                <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+                    <button id="nuevaCarpetaCancelBtn" style="padding:7px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:13px">Cancelar</button>
+                    <button id="nuevaCarpetaConfirmBtn" style="padding:7px 16px;border:none;border-radius:6px;background:#2d5be3;color:#fff;cursor:pointer;font-size:13px;font-weight:600">Crear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL RENOMBRAR CARPETA ===== -->
+    <div class="modal-overlay" id="renameCarpetaOverlay">
+        <div class="modal-box" style="max-width:380px">
+            <div class="modal-header">
+                <span class="modal-title">Renombrar carpeta</span>
+                <button class="modal-close" id="renameCarpetaClose">✕</button>
+            </div>
+            <div style="padding:16px 18px 18px">
+                <input type="text" id="renameCarpetaInput" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #dde2ec;border-radius:6px;font-size:14px;font-family:Arial,sans-serif">
+                <div id="renameCarpetaError" style="color:#cc4444;font-size:12px;margin-top:6px;min-height:16px"></div>
+                <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+                    <button id="renameCarpetaCancelBtn" style="padding:7px 16px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:13px">Cancelar</button>
+                    <button id="renameCarpetaConfirmBtn" style="padding:7px 16px;border:none;border-radius:6px;background:#2d5be3;color:#fff;cursor:pointer;font-size:13px;font-weight:600">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL MOVER A CARPETA ===== -->
+    <div class="modal-overlay" id="moverOverlay">
+        <div class="modal-box mover-box">
+            <div class="modal-header">
+                <span class="modal-title">Mover a carpeta</span>
+                <button class="modal-close" id="moverClose">✕</button>
+            </div>
+            <div style="padding:14px 18px 18px" id="moverCarpetasList"></div>
         </div>
     </div>
 
@@ -849,6 +1050,7 @@
             const li = document.createElement('li');
             li.className = 'note-item';
             li.dataset.id = nota.id;
+            li.dataset.carpetaId = nota.carpeta_id != null ? nota.carpeta_id : '';
             li.innerHTML = `
                 <div class="note-info">
                     <span class="note-name">${nota.titulo}</span>
@@ -862,6 +1064,7 @@
                             <button class="dropdown-item item-edit">Editar</button>
                             <button class="dropdown-item item-download">Descargar</button>
                             <button class="dropdown-item item-rename">Renombrar</button>
+                            <button class="dropdown-item item-folder">Mover a carpeta</button>
                             <button class="dropdown-item item-chat">Chat con IA</button>
                             <button class="dropdown-item item-delete">Eliminar</button>
                         </div>
@@ -884,6 +1087,7 @@
             li.querySelector('.item-edit').addEventListener('click',     () => { close(); editarNota(nota.id, nota.titulo, li); });
             li.querySelector('.item-download').addEventListener('click', () => { close(); descargarNota(nota.id, nota.titulo); });
             li.querySelector('.item-rename').addEventListener('click',   () => { close(); renombrarNota(nota.id, nota.titulo, li); });
+            li.querySelector('.item-folder').addEventListener('click',   () => { close(); abrirMoverACarpeta(nota.id, li); });
             li.querySelector('.item-chat').addEventListener('click',     () => { close(); abrirChat(nota.id, nota.titulo); });
             li.querySelector('.item-delete').addEventListener('click',   () => { close(); borrarNota(nota.id, li); });
 
@@ -1227,6 +1431,312 @@
         });
         document.getElementById('chatClose').addEventListener('click', () => document.getElementById('chatOverlay').classList.remove('open'));
         document.getElementById('chatOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+        // ===== CARPETAS =====
+        let moverTarget = null;
+        let renameCarpetaTarget = null;
+        let currentFolderId = null;
+
+        document.getElementById('btnCarpetas').addEventListener('click', () => {
+            mostrarScreenCarpetas();
+            document.getElementById('carpetasOverlay').classList.add('open');
+            cargarCarpetas();
+        });
+
+        function mostrarScreenCarpetas() {
+            document.getElementById('screenCarpetas').style.display = 'flex';
+            document.getElementById('screenFolderDetail').style.display = 'none';
+        }
+
+        function mostrarScreenFolderDetail(carpetaId, nombre) {
+            currentFolderId = carpetaId;
+            document.getElementById('folderDetailNombre').textContent = nombre;
+            document.getElementById('screenCarpetas').style.display = 'none';
+            document.getElementById('screenFolderDetail').style.display = 'flex';
+            cargarNotasEnCarpeta(carpetaId);
+        }
+
+        document.getElementById('carpetasClose').addEventListener('click', () => document.getElementById('carpetasOverlay').classList.remove('open'));
+        document.getElementById('folderDetailClose').addEventListener('click', () => document.getElementById('carpetasOverlay').classList.remove('open'));
+        document.getElementById('btnVolverCarpetas').addEventListener('click', () => { mostrarScreenCarpetas(); cargarCarpetas(); });
+        document.getElementById('carpetasOverlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.classList.remove('open'); });
+
+        async function cargarCarpetas() {
+            const res = await fetch('/api/carpetas');
+            const carpetas = await res.json();
+            const container = document.getElementById('carpetasList');
+            container.innerHTML = '';
+            if (carpetas.length === 0) {
+                container.innerHTML = '<div class="no-carpetas">No tenés carpetas.<br>¡Creá una con el botón de arriba!</div>';
+                return;
+            }
+            carpetas.forEach(c => container.appendChild(renderCarpetaCard(c)));
+        }
+
+        function renderCarpetaCard(carpeta) {
+            const div = document.createElement('div');
+            div.className = 'folder-card';
+            div.dataset.id = carpeta.id;
+            div.innerHTML = `
+                <div class="folder-card-clickable">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#3d6fd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px;flex-shrink:0">
+                        <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                    </svg>
+                    <div class="folder-card-info">
+                        <div class="folder-card-name">${carpeta.nombre}</div>
+                        <div class="folder-card-count">${carpeta.total} ${carpeta.total === 1 ? 'nota' : 'notas'}</div>
+                    </div>
+                </div>
+                <div class="folder-card-actions">
+                    <button class="folder-action-btn btn-rename-c" title="Renombrar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="folder-action-btn delete btn-delete-c" title="Eliminar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                    </button>
+                </div>`;
+
+            div.querySelector('.folder-card-clickable').addEventListener('click', () => {
+                mostrarScreenFolderDetail(carpeta.id, carpeta.nombre);
+            });
+
+            div.querySelector('.btn-rename-c').addEventListener('click', (e) => {
+                e.stopPropagation();
+                abrirRenameCarpeta(carpeta.id, carpeta.nombre);
+            });
+
+            div.querySelector('.btn-delete-c').addEventListener('click', async (e) => {
+                e.stopPropagation();
+                if (!confirm(`¿Eliminar la carpeta "${carpeta.nombre}"? Las notas no se borran.`)) return;
+                await fetch(`/api/carpetas/${carpeta.id}`, { method: 'DELETE' });
+                document.querySelectorAll(`#notesList [data-carpeta-id="${carpeta.id}"]`).forEach(li => {
+                    li.dataset.carpetaId = '';
+                });
+                cargarCarpetas();
+            });
+
+            return div;
+        }
+
+        async function cargarNotasEnCarpeta(carpetaId) {
+            const lista = document.getElementById('folderNotasList');
+            lista.innerHTML = '';
+            const res = await fetch(`/api/notas?carpeta_id=${carpetaId}`);
+            const notas = await res.json();
+            document.getElementById('folderDetailCount').textContent = `${notas.length} ${notas.length === 1 ? 'nota' : 'notas'}`;
+            if (notas.length === 0) {
+                lista.innerHTML = '<li class="no-notas">Esta carpeta está vacía.</li>';
+                return;
+            }
+            notas.forEach(n => lista.appendChild(renderNotaEnCarpeta(n, carpetaId)));
+        }
+
+        function renderNotaEnCarpeta(nota, carpetaId) {
+            const li = document.createElement('li');
+            li.className = 'note-item';
+            li.dataset.id = nota.id;
+            li.innerHTML = `
+                <div class="note-info">
+                    <span class="note-name">${nota.titulo}</span>
+                    <span class="note-meta">${nota.fecha} · ${nota.palabras} ${nota.palabras === 1 ? 'palabra' : 'palabras'}</span>
+                </div>
+                <div class="note-actions">
+                    <div class="menu-wrapper">
+                        <button class="menu-btn" title="Más opciones">⋮</button>
+                        <div class="dropdown-menu" style="display:none">
+                            <button class="dropdown-item item-view-f">Ver</button>
+                            <button class="dropdown-item item-edit-f">Editar</button>
+                            <button class="dropdown-item item-download-f">Descargar</button>
+                            <button class="dropdown-item item-rename-f">Renombrar</button>
+                            <button class="dropdown-item item-chat-f item-chat">Chat con IA</button>
+                            <button class="dropdown-item item-quitar-f" style="color:#e87a10">Quitar de carpeta</button>
+                            <button class="dropdown-item item-delete-f item-delete">Eliminar</button>
+                        </div>
+                    </div>
+                </div>`;
+
+            const menuBtn  = li.querySelector('.menu-btn');
+            const dropdown = li.querySelector('.dropdown-menu');
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.dropdown-menu').forEach(d => {
+                    if (d !== dropdown) d.style.display = 'none';
+                });
+                if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                    const rect = menuBtn.getBoundingClientRect();
+                    dropdown.style.position = 'fixed';
+                    dropdown.style.top = (rect.bottom + 4) + 'px';
+                    dropdown.style.right = (window.innerWidth - rect.right) + 'px';
+                    dropdown.style.left = 'auto';
+                    dropdown.style.zIndex = '200';
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            });
+
+            const close = () => dropdown.style.display = 'none';
+
+            li.querySelector('.item-view-f').addEventListener('click',     () => { close(); verNota(nota.id); });
+            li.querySelector('.item-edit-f').addEventListener('click',     () => { close(); editarNota(nota.id, nota.titulo, li); });
+            li.querySelector('.item-download-f').addEventListener('click', () => { close(); descargarNota(nota.id, nota.titulo); });
+            li.querySelector('.item-rename-f').addEventListener('click',   () => { close(); renombrarNota(nota.id, nota.titulo, li); });
+            li.querySelector('.item-chat-f').addEventListener('click',     () => { close(); abrirChat(nota.id, nota.titulo); });
+
+            li.querySelector('.item-quitar-f').addEventListener('click', async () => {
+                close();
+                await fetch(`/api/notas/${nota.id}/carpeta`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ carpeta_id: null })
+                });
+                li.remove();
+                const remaining = document.querySelectorAll('#folderNotasList .note-item').length;
+                document.getElementById('folderDetailCount').textContent = `${remaining} ${remaining === 1 ? 'nota' : 'notas'}`;
+                if (remaining === 0) document.getElementById('folderNotasList').innerHTML = '<li class="no-notas">Esta carpeta está vacía.</li>';
+                cargarNotas();
+            });
+
+            li.querySelector('.item-delete-f').addEventListener('click', async () => {
+                close();
+                await fetch(`/api/notas/${nota.id}`, { method: 'DELETE' });
+                li.remove();
+                const remaining = document.querySelectorAll('#folderNotasList .note-item').length;
+                document.getElementById('folderDetailCount').textContent = `${remaining} ${remaining === 1 ? 'nota' : 'notas'}`;
+                if (remaining === 0) document.getElementById('folderNotasList').innerHTML = '<li class="no-notas">Esta carpeta está vacía.</li>';
+            });
+
+            return li;
+        }
+
+        // ===== NUEVA CARPETA =====
+        document.getElementById('btnNuevaCarpeta').addEventListener('click', () => {
+            document.getElementById('nuevaCarpetaInput').value = '';
+            document.getElementById('nuevaCarpetaError').textContent = '';
+            document.getElementById('nuevaCarpetaOverlay').classList.add('open');
+            setTimeout(() => document.getElementById('nuevaCarpetaInput').focus(), 50);
+        });
+
+        const cerrarNuevaCarpeta = () => document.getElementById('nuevaCarpetaOverlay').classList.remove('open');
+        document.getElementById('nuevaCarpetaClose').addEventListener('click', cerrarNuevaCarpeta);
+        document.getElementById('nuevaCarpetaCancelBtn').addEventListener('click', cerrarNuevaCarpeta);
+        document.getElementById('nuevaCarpetaOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('nuevaCarpetaOverlay')) cerrarNuevaCarpeta(); });
+
+        document.getElementById('nuevaCarpetaConfirmBtn').addEventListener('click', async () => {
+            const nombre = document.getElementById('nuevaCarpetaInput').value.trim();
+            const errorEl = document.getElementById('nuevaCarpetaError');
+            if (!nombre) { errorEl.textContent = 'El nombre no puede estar vacío.'; return; }
+            const res = await fetch('/api/carpetas', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre })
+            });
+            const data = await res.json();
+            if (!res.ok) { errorEl.textContent = data.error || 'Error al crear la carpeta.'; return; }
+            cerrarNuevaCarpeta();
+            cargarCarpetas();
+        });
+
+        document.getElementById('nuevaCarpetaInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('nuevaCarpetaConfirmBtn').click();
+            if (e.key === 'Escape') cerrarNuevaCarpeta();
+        });
+
+        // ===== RENOMBRAR CARPETA =====
+        function abrirRenameCarpeta(id, nombre) {
+            renameCarpetaTarget = { id, nombre };
+            document.getElementById('renameCarpetaInput').value = nombre;
+            document.getElementById('renameCarpetaError').textContent = '';
+            document.getElementById('renameCarpetaOverlay').classList.add('open');
+            setTimeout(() => document.getElementById('renameCarpetaInput').select(), 50);
+        }
+
+        const cerrarRenameCarpeta = () => document.getElementById('renameCarpetaOverlay').classList.remove('open');
+        document.getElementById('renameCarpetaClose').addEventListener('click', cerrarRenameCarpeta);
+        document.getElementById('renameCarpetaCancelBtn').addEventListener('click', cerrarRenameCarpeta);
+        document.getElementById('renameCarpetaOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('renameCarpetaOverlay')) cerrarRenameCarpeta(); });
+
+        document.getElementById('renameCarpetaConfirmBtn').addEventListener('click', async () => {
+            const nuevoNombre = document.getElementById('renameCarpetaInput').value.trim();
+            const errorEl = document.getElementById('renameCarpetaError');
+            if (!nuevoNombre) { errorEl.textContent = 'El nombre no puede estar vacío.'; return; }
+            const res = await fetch(`/api/carpetas/${renameCarpetaTarget.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: nuevoNombre })
+            });
+            const data = await res.json();
+            if (!res.ok) { errorEl.textContent = data.error || 'Error al renombrar.'; return; }
+            cerrarRenameCarpeta();
+            if (renameCarpetaTarget.id === currentFolderId && document.getElementById('screenFolderDetail').style.display !== 'none') {
+                document.getElementById('folderDetailNombre').textContent = nuevoNombre;
+            }
+            cargarCarpetas();
+        });
+
+        document.getElementById('renameCarpetaInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('renameCarpetaConfirmBtn').click();
+            if (e.key === 'Escape') cerrarRenameCarpeta();
+        });
+
+        // ===== MOVER A CARPETA =====
+        async function abrirMoverACarpeta(notaId, liElement) {
+            moverTarget = { notaId, liElement };
+            const container = document.getElementById('moverCarpetasList');
+            container.innerHTML = '<p style="font-size:13px;color:#bbb;text-align:center;padding:10px 0">Cargando...</p>';
+            document.getElementById('moverOverlay').classList.add('open');
+
+            const res = await fetch('/api/carpetas');
+            const carpetas = await res.json();
+            container.innerHTML = '';
+
+            const carpetaActualId = liElement.dataset.carpetaId ? parseInt(liElement.dataset.carpetaId) : null;
+
+            if (carpetas.length === 0) {
+                container.innerHTML = '<p style="font-size:13px;color:#bbb;text-align:center;padding:20px 0">No tenés carpetas. Creá una primero.</p>';
+            } else {
+                carpetas.forEach(c => {
+                    const btn = document.createElement('button');
+                    btn.className = 'mover-carpeta-item';
+                    btn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+                        </svg>
+                        ${c.nombre}${c.id === carpetaActualId ? ' <span style="color:#3d6fd4;font-size:11px">(actual)</span>' : ''}`;
+                    btn.addEventListener('click', async () => {
+                        await fetch(`/api/notas/${notaId}/carpeta`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ carpeta_id: c.id })
+                        });
+                        liElement.remove();
+                        actualizarListaVacia();
+                        cerrarMover();
+                    });
+                    container.appendChild(btn);
+                });
+            }
+
+            if (carpetaActualId) {
+                const btnQuitar = document.createElement('button');
+                btnQuitar.className = 'mover-carpeta-item quitar';
+                btnQuitar.textContent = 'Quitar de carpeta';
+                btnQuitar.addEventListener('click', async () => {
+                    await fetch(`/api/notas/${notaId}/carpeta`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ carpeta_id: null })
+                    });
+                    cargarNotas();
+                    cerrarMover();
+                });
+                container.appendChild(btnQuitar);
+            }
+        }
+
+        const cerrarMover = () => document.getElementById('moverOverlay').classList.remove('open');
+        document.getElementById('moverClose').addEventListener('click', cerrarMover);
+        document.getElementById('moverOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('moverOverlay')) cerrarMover(); });
     </script>
 </body>
 </html>
